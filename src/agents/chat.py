@@ -1,0 +1,8 @@
+from abc import ABC, abstractmethod
+
+class LLM(ABC):
+    @abstractmethod
+    def chat(self, prompt: str) -> str:
+        pass
+    def clean(self, text: str) -> str:
+        pass
