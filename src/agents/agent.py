@@ -1,10 +1,13 @@
-from typing import Literal, Optional
-from langchain.output_parsers import PydanticOutputParser
-from pydantic import BaseModel, Field
+from typing import Dict, Literal, Optional, Union
+from pydantic import BaseModel
+from langchain_core.output_parsers import PydanticOutputParser
 
-class Agent(BaseModel):
-    action: Literal["use_tool","normal_response"] = Field(..., description="What the agent should do")
-    tool_input: Optional[str]= Field(None, description="Arithmetic expression to send to calculator tool")
-    response: Optional[str]= Field(None, description="Normal response if no tool is needed")
 
-parser = PydanticOutputParser(pydantic_object=Agent)
+class AgentAction(BaseModel):
+    action: Literal["calculator", "normal_response", "follow_up_question"]
+    tool_name: Optional[str] = None
+    tool_args: Optional[Dict[str, Union[int, float, str]]] = None
+    response: Optional[str] = None
+    question: Optional[str] = None
+
+parser = PydanticOutputParser(pydantic_object=AgentAction)
