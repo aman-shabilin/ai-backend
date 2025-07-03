@@ -1,6 +1,7 @@
 langchain
 fastapi
 uvicorn
+gradio
 pydantic
 requests
 pytest

@@ -19,7 +19,6 @@ memory = ConversationBufferMemory(k=3, return_messages=True)
 prompt_template = PromptTemplate.from_template(SYSTEM_PROMPT)
 
 class ChatGemini(LLM): 
-
     def __init__(self, api_key:str, system_prompt: str = None):
         self.api_key = api_key
         self.system_prompt = system_prompt
@@ -27,7 +26,6 @@ class ChatGemini(LLM):
             model = "gemini-2.0-flash",
             google_api_key = gemini_api_key
         )
-
     def chat(self, prompt: str) -> str:
         chat_history = memory.chat_memory.messages.copy()
 
@@ -36,7 +34,6 @@ class ChatGemini(LLM):
         
         chat_history.append(HumanMessage(content=prompt))
         response = self.model.invoke(chat_history)
-        
         memory.chat_memory.add_user_message(prompt)
         memory.chat_memory.add_ai_message(response)
 

@@ -1,21 +1,13 @@
+from typing import Annotated
 from langchain.tools import tool
-import requests
+from pydantic import BaseModel, Field
+from langchain_core.tools import StructuredTool
+
+
 @tool
 def calculator(expression: str) -> str:
-    """
-    Call external calculator API to evaluate an arithmetic expression.
-
-    Args:
-        expression: A string like "3 + 5"
-    """
+    """Evaluate a math expression like '1+1'."""
     try:
-        response = requests.post(
-            "http://localhost:8000/api/calculate",  # or your actual endpoint
-            json={"expression": expression}
-        )
-        result = response.json().get("result")
-        return str(result)
+        return str(eval(expression, {"__builtins__": {}}))
     except Exception as e:
-        return f"Calculator error: {str(e)}"
-    
-tools = [calculator]
+        return f"Invalid expression: {e}"
