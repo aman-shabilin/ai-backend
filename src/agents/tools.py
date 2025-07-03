@@ -11,3 +11,5 @@ def calculator(expression: str) -> str:
         return str(eval(expression, {"__builtins__": {}}))
     except Exception as e:
         return f"Invalid expression: {e}"
+    
+tools = [calculator]

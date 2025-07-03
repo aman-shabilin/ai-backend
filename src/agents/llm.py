@@ -1,10 +1,10 @@
 import os
-from dotenv import load_dotenv
 from .chat import LLM
-from src.prompt.prompt import SYSTEM_PROMPT
-from langchain_google_genai import ChatGoogleGenerativeAI
+from src.agents.tools import tools
+from dotenv import load_dotenv
 from langchain.memory import ConversationBufferMemory
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain.agents import initialize_agent, AgentType
 
 load_dotenv()
 
@@ -14,25 +14,25 @@ if not gemini_api_key:
     ValueError("GOOGLE_API_KEY environment variable is not set")
         
 class ChatGemini(LLM): 
+
     def __init__(self, api_key:str, system_prompt: str = None):
         self.api_key = api_key
         self.system_prompt = system_prompt
         self.model = ChatGoogleGenerativeAI(
-            model = "gemini-2.5-flash",
+            model = "gemini-2.0-flash",
             google_api_key = gemini_api_key
         )
-        self.memory = ConversationBufferMemory(k=3, return_messages=True)
-
+        self.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+        self.agent = initialize_agent(
+            tools=tools,
+            llm=self.model,
+            agent=AgentType.CONVERSATIONAL_REACT_DESCRIPTION,
+            memory=self.memory,
+            verbose=True  # helpful for dev
+        )
     def chat(self, prompt: str) -> str:
-        chat_history = self.memory.chat_memory.messages.copy()
-
-        if not any(isinstance(m, SystemMessage) for m in chat_history):
-            chat_history.insert(0, SystemMessage(content=SYSTEM_PROMPT))
-        
-        chat_history.append(HumanMessage(content=prompt))
-        response = self.model.invoke(chat_history)
-        print(f"Current response from model:{response}")
-        self.memory.chat_memory.add_user_message(prompt)
-        self.memory.chat_memory.add_ai_message(response)
-
-        return response
+        try: 
+            result = self.agent.run(prompt)
+            return result
+        except Exception as e:
+            return f"Agent error: {e}"
