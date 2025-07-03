@@ -5,4 +5,4 @@ gradio
 pydantic
 requests
 python-dotenv
-langchain[google-genai]
+google-generativeai
