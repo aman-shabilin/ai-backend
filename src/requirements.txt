@@ -4,6 +4,5 @@ uvicorn
 gradio
 pydantic
 requests
-pytest
 python-dotenv
 langchain[google-genai]
