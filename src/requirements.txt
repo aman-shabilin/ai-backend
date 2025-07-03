@@ -1,8 +1,8 @@
-langchain
 fastapi
 uvicorn
-gradio
+langchain
+langchain-google-genai
+google-generativeai
 pydantic
 requests
 python-dotenv
-google-generativeai
