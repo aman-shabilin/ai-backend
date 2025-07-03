@@ -1,17 +1,8 @@
-import os
 from .chat import LLM
 from src.agents.tools import tools
-from dotenv import load_dotenv
 from langchain.memory import ConversationBufferMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import initialize_agent, AgentType
-
-load_dotenv()
-
-gemini_api_key = os.getenv("GOOGLE_API_KEY")
-
-if not gemini_api_key:
-    ValueError("GOOGLE_API_KEY environment variable is not set")
         
 class ChatGemini(LLM): 
 
@@ -20,7 +11,7 @@ class ChatGemini(LLM):
         self.system_prompt = system_prompt
         self.model = ChatGoogleGenerativeAI(
             model = "gemini-2.0-flash",
-            google_api_key = gemini_api_key
+            google_api_key = api_key
         )
         self.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
         self.agent = initialize_agent(
