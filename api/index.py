@@ -1,7 +1,6 @@
 import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from prompt.prompt import SYSTEM_PROMPT
 from fastapi.middleware.cors import CORSMiddleware
 from infra.models import ChatResponse, ChatRequest
 from agents.llm import ChatGemini
@@ -15,7 +14,7 @@ def get_model():
     if not gemini_api_key:
         ValueError("GOOGLE_API_KEY environment variable is not set")
 
-    model = ChatGemini(api_key=gemini_api_key, system_prompt=SYSTEM_PROMPT)
+    model = ChatGemini(api_key=gemini_api_key)
     return model
 
 origins=[
