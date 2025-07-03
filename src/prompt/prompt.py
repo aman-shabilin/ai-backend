@@ -12,20 +12,3 @@ Available tool:
 User: {request}
 ""
 """
-
-def format_prompt(prompt_template: str, user_prompt: str, parser) -> str:
-    """
-    Fills in a prompt template with the user's request and parser instructions.
-
-    Args:
-        prompt_template: The string template containing placeholders.
-        user_prompt: The actual user prompt text.
-        parser: A parser object that has get_format_instructions().
-
-    Returns:
-        A formatted string.
-    """
-    return prompt_template.format(
-        request=user_prompt,
-        format_instructions=parser.get_format_instructions()
-    )
