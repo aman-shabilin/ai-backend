@@ -1,5 +1,5 @@
 from .chat import LLM
-from src.agents.tools import tools
+from agents.tools import tools
 from langchain.memory import ConversationBufferMemory
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.agents import initialize_agent, AgentType

@@ -1,10 +1,10 @@
 import os
 from fastapi import FastAPI
 from dotenv import load_dotenv
-from ..prompt.prompt import SYSTEM_PROMPT
+from prompt.prompt import SYSTEM_PROMPT
 from fastapi.middleware.cors import CORSMiddleware
-from ..infra.models import ChatResponse, ChatRequest
-from ..agents.llm import ChatGemini
+from infra.models import ChatResponse, ChatRequest
+from agents.llm import ChatGemini
 
 app = FastAPI()
 def get_model():
