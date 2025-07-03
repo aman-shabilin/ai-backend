@@ -1,59 +1,63 @@
-🔧 Setup Instructions
-1. Clone the Repository
+# 🧠 AI Chatbot (Backend + Frontend)
 
+A simple Python chatbot interface inspired by Blackbox AI, built using FastAPI and Gradio.
+
+---
+
+## 📦 Requirements
+
+- Python 3.8+
+- `pip`, `venv`
+
+---
+
+# 🔧 Setup Instructions
+
+## 1. Clone the Repository
+
+```bash
 git clone https://github.com/your-username/your-repo-name.git
 cd your-repo-name
+```
 
-2. Create & Activate Virtual Environment
 
-# Create a virtual environment
+## 2. Create & Activate Virtual Environment
+
+Create a virtual environment
+```
 python -m venv venv
+```
 
-# Activate it (use one of these depending on OS)
-# Windows
+Then, activate the virtual environment
+
+### On Windows
+```
 venv\Scripts\activate
-# macOS/Linux
+```
+### On macOS/Linux
+```
 source venv/bin/activate
+```
 
-3. Install Required Packages
-
+## 3. Install Dependencies
+```
 pip install -r requirements.txt
+```
 
-🚀 Run the Application
-1. Start the Backend (FastAPI)
-
+# 🚀 Run the Application
+## 1. Start the Backend (FastAPI)
+```
 uvicorn src.main:app --reload
+```
+Backend will start at: http://localhost:8000
+## 2. Start the Chatbot Frontend (Gradio)
 
-This will start your backend at:
-📍 http://localhost:8000
-2. Start the Chatbot Frontend
-
-In another terminal, while the backend is running:
-
+In another terminal (with the same virtual environment activated):
+```
 python frontend.py
+```
+This will launch a Gradio chat interface in your browser:
+👉 http://127.0.0.1:7860
 
-This will launch a Gradio-based chat interface in your browser (e.g. http://127.0.0.1:7860).
-💬 Features
 
-    Chat history (like Blackbox AI or ChatGPT)
 
-    Large prompt box + streaming-style response (optional)
-
-    Extendable with memory, tools, or structured agents
-
-📁 Project Structure
-
-├── frontend.py           # Gradio chat interface
-├── requirements.txt      # Python dependencies
-├── src/
-│   └── main.py           # FastAPI app entry point
-├── prompt_formatter.py   # (optional) Prompt formatting util
-└── README.md             # You’re here!
-
-🛠 To Do
-
-Add streaming support
-
-Save chat history to file
-
-Deploy to Hugging Face or Docker
