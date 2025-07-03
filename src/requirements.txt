@@ -6,5 +6,4 @@ pydantic
 requests
 pytest
 python-dotenv
-google-generativeai
 langchain[google-genai]
