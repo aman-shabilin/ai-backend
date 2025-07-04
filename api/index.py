@@ -18,12 +18,15 @@ def get_model():
     return model
 
 origins=[
-    "https://localhost:8080"
+    "https://localhost:8000"
 ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],  # Allow all for testing
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 @app.post("/chat", response_model = ChatResponse)
