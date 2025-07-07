@@ -1,9 +1,6 @@
 from langchain.tools import tool
-from routers.pinecone import VectorStore
+from typing import Callable
 import re
-
-vector_store = VectorStore()
-
 
 @tool
 def calculator(expression: str) -> str:
@@ -25,16 +22,12 @@ def calculator(expression: str) -> str:
     except Exception:
         return "I couldn't evaluate that expression. Could you double-check it?"
     
-@tool    
-def retrieve_tools(query: str) -> str:
-    """
-    Retrieve the list of products from vector store
-    """
-    try:
-        res = vector_store.similarity_search(query)
-        return res 
-    except Exception as e:
-        return f"Error retrieving products: {e}"
-
-
-tools = [calculator, retrieve_tools]
+def make_retrieve_tool(qa_chain) -> Callable:
+    @tool
+    def retrieve_tools(query: str) -> str:
+        """
+        Retrieve the list of products from the vector store.
+        """
+        return qa_chain.invoke(query)
+    
+    return retrieve_tools
