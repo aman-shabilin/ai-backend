@@ -24,7 +24,6 @@ class ChatGemini(LLM):
 
         Overall, Assistant is a powerful system that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.
         """
-
         self.agent = initialize_agent(
             tools=tools,
             llm=self.model,
@@ -45,3 +44,4 @@ class ChatGemini(LLM):
             return result
         except Exception as e:
             return f"Agent error: {e}"
+

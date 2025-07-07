@@ -1,0 +1,23 @@
+[project]
+name = "ai-backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "beautifulsoup4>=4.13.4",
+    "fastapi[standard]>=0.115.14",
+    "gradio>=5.35.0",
+    "httptools>=0.6.4",
+    "langchain>=0.3.26",
+    "langchain-community>=0.3.27",
+    "langchain-google-genai>=2.1.6",
+    "langchain-huggingface>=0.3.0",
+    "langchain-pinecone>=0.2.8",
+    "numexpr>=2.11.0",
+    "pinecone-client>=6.0.0",
+    "python-dotenv>=1.1.1",
+    "requests>=2.32.4",
+    "sentence-transformers>=5.0.0",
+    "uvicorn>=0.35.0",
+]
