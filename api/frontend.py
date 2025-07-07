@@ -15,4 +15,4 @@ def chat_with_backend(messages, history):
         
 
 demo = gr.ChatInterface(fn=chat_with_backend, type="messages")
-demo.launch(server_name="0.0.0.0", server_port=7860)
+demo.launch(server_port=7860)
