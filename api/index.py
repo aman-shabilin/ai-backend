@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from agents.agent import get_agent
+from agents.agent import get_agent, ask_outlet_query, ask_product_query
 from routers.pinecone import VectorStore
 from fastapi.middleware.cors import CORSMiddleware
 from infra.models import ChatResponse, ChatRequest
@@ -36,11 +36,18 @@ async def initialize_vector_store():
 async def chat(request: ChatRequest):
 
     result = get_agent().chat(request.prompt)
+    # DEBUG: print conversation so far
+    print("[Memory DEBUG]", get_agent().agent.memory.chat_memory.messages)
     return ChatResponse(response=result)
 
 @app.get("/products", response_model = ChatResponse)
 async def get_products(query: str = Query(..., description="Ask about ZUS drinkware")):
-    results = get_agent().chat(query)
+    results = ask_product_query(query)
+    return ChatResponse(response=results)
+
+@app.get("/outlets", response_model= ChatResponse)
+async def get_outlets(query: str = Query(..., description="Ask about ZUS outlets")):
+    results = ask_outlet_query(query)
     return ChatResponse(response=results)
 
 @app.get("/")
