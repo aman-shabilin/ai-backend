@@ -1,5 +1,4 @@
 from langchain.tools import tool
-from typing import Callable
 import re
 
 @tool
@@ -21,13 +20,3 @@ def calculator(expression: str) -> str:
         return str(result)
     except Exception:
         return "I couldn't evaluate that expression. Could you double-check it?"
-    
-def make_retrieve_tool(qa_chain) -> Callable:
-    @tool
-    def retrieve_tools(query: str) -> str:
-        """
-        Retrieve the list of products from the vector store.
-        """
-        return qa_chain.invoke(query)
-    
-    return retrieve_tools

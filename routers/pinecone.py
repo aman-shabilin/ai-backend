@@ -1,6 +1,7 @@
 import os
+import re
 from dotenv import load_dotenv
-from pinecone import Pinecone, ServerlessSpec
+from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from bs4 import SoupStrainer
 from langchain_core.documents import Document
@@ -14,14 +15,6 @@ class VectorStore():
         self.pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
         self.embeddings = HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")
 
-        if index_name not in [idx['name'] for idx in self.pinecone.list_indexes()]:
-            print(f"Creating index {index_name}...")
-            self.pinecone.create_index(
-                index_name=index_name,
-                dimension=384,
-                metric="cosine",
-                spec=ServerlessSpec(cloud='aws', region='us-east-1')
-            )
         self.vector_store = PineconeVectorStore(
             index_name=index_name,
             namespace=namespace,
@@ -43,36 +36,40 @@ class VectorStore():
 
     def split_product(self, raw_text: str):
 
-        product_blocks = raw_text.split("+ Quick add")
-        
-        cleaned_blocks = [
-            "+ Quick add\n" + block.strip()
-            for block in product_blocks
-            if block.strip()
-        ]
+    # Split on "+ Quick add", but keep the marker for context
+        raw_products = re.split(r"\+ Quick add\s*", raw_text)
 
-        docs = [Document(page_content=block) for block in cleaned_blocks]
+        product_docs = []
+        seen = set()
 
-        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
-        split_docs = splitter.split_documents(docs)
+        for raw in raw_products:
+            product = raw.strip()
+            if not product:
+                continue
 
-        return split_docs
+            full_text = f"+ Quick add {product}"
+
+            if full_text not in seen:
+                seen.add(full_text)
+                product_docs.append(Document(page_content=full_text))
+
+        return product_docs
 
     def add_documents(self, documents):
         self.vector_store.add_documents(documents)
+    
+    def retrieve(self, query, k=5):
+        return self.vector_store.similarity_search(query, k=k)
+    
+    def is_vector_store_empty(self, index_name="zusdrinkware", namespace: str = "default") -> bool:
+        index = self.pinecone.Index(index_name)
+        stats = index.describe_index_stats()
+        
+        namespace_stats = stats.get("namespaces", {}).get(namespace, {})
+        vector_count = namespace_stats.get("vector_count", 0)
 
-    def as_retriever(self):
-        return self.vector_store.as_retriever()
-
-    def similarity_search(self, query, k=5):
-        if self.vector_store is None:
-            raise ValueError("Vector store is empty. Please add documents first.")
-        return self.vector_store.similarity_search(query, k=k)    
-
-    def describe(self):
-        stats = self.pinecone.describe_index_stats()
-        print(stats)
-        return stats
+        print(f"[Startup] Vector count in namespace '{namespace}': {vector_count}")
+        return vector_count == 0
 
 
 

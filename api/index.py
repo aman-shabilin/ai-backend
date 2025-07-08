@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Query
-from agents.agent import get_agent, retrieve_tools
+from agents.agent import get_agent
 from routers.pinecone import VectorStore
 from fastapi.middleware.cors import CORSMiddleware
 from infra.models import ChatResponse, ChatRequest
@@ -20,18 +20,17 @@ app.add_middleware(
 )
 
 vector_store = VectorStore()
-vector_store.describe()
 
 @app.on_event("startup")
 async def initialize_vector_store():
-    if vector_store.vector_store is None:
+    if vector_store.is_vector_store_empty("zusdrinkware", "default"):
         print("Vector store is empty. Scraping and loading documents...")
         raw = vector_store.scrape()
         docs = vector_store.split_product(raw)
         vector_store.add_documents(docs)
-        print("Vector store initialized.")
+        print("Vector store initialized with new documents.")
     else:
-        print("Vector store already exists and is loaded.")
+        print("Vector store already contains vectors. Skipping re-indexing.")
 
 @app.post("/chat", response_model = ChatResponse)
 async def chat(request: ChatRequest):
@@ -41,8 +40,7 @@ async def chat(request: ChatRequest):
 
 @app.get("/products", response_model = ChatResponse)
 async def get_products(query: str = Query(..., description="Ask about ZUS drinkware")):
-    print("Vector store: {vector_store.vector_store}")
-    results = retrieve_tools(query)
+    results = get_agent().chat(query)
     return ChatResponse(response=results)
 
 @app.get("/")

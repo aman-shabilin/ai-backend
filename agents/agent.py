@@ -1,13 +1,12 @@
 import os
+from .chat import LLM
 from dotenv import load_dotenv
 from agents.llm import ChatGemini
+from agents.tools import calculator
+from langchain_core.tools import Tool
 from routers.pinecone import VectorStore
-from .chat import LLM
+from langchain.chains.question_answering import load_qa_chain
 from langchain.agents import initialize_agent
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.output_parsers import StrOutputParser
-from agents.tools import make_retrieve_tool, calculator
-from langchain_core.prompts import PromptTemplate
 
 load_dotenv()
 
@@ -15,24 +14,28 @@ gemini_api_key = os.getenv("GOOGLE_API_KEY")
 
 vector_store = VectorStore()
 llm = ChatGemini(api_key=gemini_api_key)
-prompt = PromptTemplate.from_template(
-    "Answer the question based on the context below.\n\nContext:\n{context}\n\nQuestion:\n{question}"
-)
-qa_chain = (
-    {
-        "context": vector_store.as_retriever(),
-        "question": RunnablePassthrough(),
-    }
-    | prompt
-    | llm.model
-    | StrOutputParser()
-)
 
-retrieve_tools = make_retrieve_tool(qa_chain)
+
+qa_chain = load_qa_chain(llm.model, chain_type="stuff")
+
+def ask_product_query(query: str) -> str:
+    product_search = vector_store.retrieve(query, k=5)
+    result = qa_chain.invoke({
+        "input_documents": product_search,
+        "question": query
+    })
+    return result
+
+
+retriever_tool = Tool.from_function(
+    name="ProductRetriever",
+    func=ask_product_query,
+    description="Useful for answering product-related questions using the ZUS vector store.",
+)
 
 tools = [
     calculator,
-    retrieve_tools
+    retriever_tool
 ]
 
 class get_agent(LLM):
