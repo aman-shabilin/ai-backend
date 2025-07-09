@@ -65,5 +65,32 @@ python frontend.py
 This will launch a Gradio chat interface in your browser:
 👉 http://127.0.0.1:7860
 
+# 🧱 Architecture Overview
+This project integrates two main AI functionalities:
 
+## 1. Retrieval-Augmented Generation (RAG)
+Purpose: Answers natural language queries based on product data.
 
+Flow:
+
+🗣️ User query → 🧠 Embedding (BAAI/bge-small-en-v1.5) → 📦 Pinecone search → 🤖 LLM generates answer using relevant data.
+Used for: /products endpoint.
+
+## 2. 📊 Text-to-SQL (Text2SQL)
+Purpose: Converts natural language queries into SQL to query outlet data.
+
+Flow:
+
+🗣️ Query → 🧾 Schema-aware prompt → 🧠 LLM → 🗃️ SQL generation → 🏁 Query execution → 📤 Result returned.
+
+Used for: /outlets endpoint.
+
+# ⚖️ Key Trade-offs
+
+| 📌 Area             | ✅ Decision               | ⚠️ Trade-off                                                                  |
+| ------------------- | ------------------------ | ----------------------------------------------------------------------------- |
+| **Embedding Model** | `BAAI/bge-small-en-v1.5` | Small and efficient, but may miss subtle context.                             |
+| **Vector Store**    | Pinecone                 | Fast and scalable, but requires external setup and usage limits on free tier. |
+| **UI Framework**    | Gradio                   | Quick to integrate, but limited design flexibility.                           |
+| **Model Strategy**  | Pre-trained LLMs only    | No fine-tuning needed, but domain-specific accuracy may vary.                 |
+| **Framework**       | FastAPI + LangChain      | Clean modularity and future-proofing, but learning curve for newcomers.       |
