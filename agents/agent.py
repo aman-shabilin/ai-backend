@@ -2,14 +2,14 @@ import os
 from .chat import LLM
 from agents.tools import calculator
 from dotenv import load_dotenv
-from routers.db import db
-from langchain.chains import create_sql_query_chain
-from langchain_experimental.sql import SQLDatabaseChain
+from routers.db import db, run_query, clean_sql_output,nl_response_prompt, sql_prompt
 from agents.llm import ChatGemini
 from langchain_core.tools import Tool
 from routers.pinecone import VectorStore
 from langchain.agents import initialize_agent
 from langchain.chains.question_answering import load_qa_chain
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnablePassthrough , RunnableLambda
 
 load_dotenv()
 
@@ -17,7 +17,6 @@ gemini_api_key = os.getenv("GOOGLE_API_KEY")
 
 vector_store = VectorStore()
 llm = ChatGemini(api_key=gemini_api_key)
-
 
 
 def ask_product_query(query: str) -> str:
@@ -36,13 +35,25 @@ def ask_product_query(query: str) -> str:
 
 
 def ask_outlet_query(query: str) -> str:
-    sql_chain = SQLDatabaseChain.from_llm(
-        llm=llm.model,
-        db=db,
-    )
-    result = sql_chain.invoke({'query': query})
-    print("[SQL DEBUG]", result)
-    return result.get("result") or result.get("answer") or "Sorry, I couldn't find any outlet information related to your query."
+    sql_chain = (RunnablePassthrough.assign(schema=lambda _: db.get_table_info()
+                                        )
+            | sql_prompt
+            | llm.model.bind(stop=["\n SQLResult: "])
+            | StrOutputParser()
+            | RunnableLambda(clean_sql_output)
+            )
+
+    full_chain = (RunnablePassthrough.assign(query=sql_chain).assign(
+        schema=lambda _: db.get_table_info(),
+        response=lambda vars: run_query(vars["query"]),
+            )
+            | nl_response_prompt
+            | llm.model
+            | RunnableLambda (lambda msg: msg.content)
+)
+    
+    result = full_chain.invoke({"question": query})
+    return result
 
 retriever_tool = Tool.from_function(
     name="ProductRetriever",
