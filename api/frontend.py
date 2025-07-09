@@ -6,10 +6,8 @@ from infra.models import ChatRequest
 def chat_with_backend(message, history):
     try:
         request = ChatRequest(prompt=message)
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(get_agent().chat(request.prompt))
-        return result.response
+        result = get_agent().chat(request.prompt)
+        return result
     except Exception as e:
         return f"Error: {e}"
 
