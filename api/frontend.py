@@ -1,6 +1,5 @@
 import gradio as gr
 import asyncio
-from agents.chat import chat
 from agents.agent import get_agent
 from infra.models import ChatRequest
 
