@@ -6,7 +6,7 @@ def chat_with_backend(messages, history):
     print(f"Message : {messages}")
     try:
         res = requests.post(
-            "http://localhost:8000/chat",
+            "https://v0-interactive-web-qblmwgpqahg.vercel.app/",
             json={"prompt": messages},
         )
         return res.json()["response"]

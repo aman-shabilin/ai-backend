@@ -8,7 +8,8 @@ from infra.models import ChatResponse, ChatRequest
 app = FastAPI()
 
 origins=[
-    "https://localhost:8000"
+    "https://localhost:8000",
+    "https://v0-interactive-web-qblmwgpqahg.vercel.app/"
 ]
 
 app.add_middleware(
