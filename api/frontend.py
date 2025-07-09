@@ -1,18 +1,20 @@
 import gradio as gr
-import requests
+import asyncio
+from agents.chat import chat
+from agents.agent import get_agent
+from infra.models import ChatRequest
 
 
 def chat_with_backend(messages, history):
-    print(f"Message : {messages}")
     try:
-        res = requests.post(
-            "https://v0-interactive-web-qblmwgpqahg.vercel.app/",
-            json={"prompt": messages},
-        )
-        return res.json()["response"]
+        request = ChatRequest(prompt=messages)
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        result = loop.run_until_complete(get_agent.chat(request))
+        return result.response
     except Exception as e:
         return f"Error: {e}"
-        
+
 
 demo = gr.ChatInterface(fn=chat_with_backend, type="messages")
-demo.launch(server_port=7860)
+demo.launch()
