@@ -1,12 +1,11 @@
 import os
 import re
-from pinecone import Pinecone
-from langchain_pinecone import PineconeVectorStore
 from bs4 import SoupStrainer
+from pinecone import Pinecone
 from langchain_core.documents import Document
+from langchain_pinecone import PineconeVectorStore
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
 class VectorStore(): 
     def __init__(self, index_name="zusdrinkware", namespace="default"):
         self.pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))
@@ -33,7 +32,7 @@ class VectorStore():
 
     def split_product(self, raw_text: str):
 
-    # Split on "+ Quick add", but keep the marker for context
+    # Split on "+ Quick add" as the raw data is extracted from a single page 
         raw_products = re.split(r"\+ Quick add\s*", raw_text)
 
         product_docs = []

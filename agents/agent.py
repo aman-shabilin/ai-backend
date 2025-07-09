@@ -1,18 +1,22 @@
 import os
 from .chat import LLM
-from agents.tools import calculator
-from routers.db import db, run_query, clean_sql_output,nl_response_prompt, sql_prompt
 from agents.llm import ChatGemini
+from agents.tools import calculator
 from langchain_core.tools import Tool
 from routers.pinecone import VectorStore
 from langchain.agents import initialize_agent
-from langchain.chains.question_answering import load_qa_chain
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough , RunnableLambda
+from langchain.chains.question_answering import load_qa_chain
+from langchain_core.runnables import RunnablePassthrough , RunnableLambda, RunnableMap, RunnableBranch
+from routers.db import db, run_query, clean_sql_output,nl_response_prompt, sql_prompt, intent_prompt
 
+#Import the Pinecone vector store
+vector_store = VectorStore()
+
+# Gemini api key from .env file
 gemini_api_key = os.getenv("GOOGLE_API_KEY")
 
-vector_store = VectorStore()
+#Import llm model from the ChatGemini class
 llm = ChatGemini(api_key=gemini_api_key)
 
 
@@ -32,6 +36,9 @@ def ask_product_query(query: str) -> str:
 
 
 def ask_outlet_query(query: str) -> str:
+
+    intent_check_chain = intent_prompt | llm.model | StrOutputParser()
+
     sql_chain = (RunnablePassthrough.assign(schema=lambda _: db.get_table_info()
                                         )
             | sql_prompt
@@ -40,14 +47,25 @@ def ask_outlet_query(query: str) -> str:
             | RunnableLambda(clean_sql_output)
             )
 
-    full_chain = (RunnablePassthrough.assign(query=sql_chain).assign(
+    full_chain = (
+        RunnableMap ({
+            "intent": lambda vars: vars["question"],
+            "question": lambda vars: vars["question"]
+        })
+        |
+        RunnableBranch(
+        # Case 1: Not clear (No)
+        (lambda vars: vars["intent"].strip().lower().startswith("no"),
+         RunnableLambda(lambda _: "Please clarify your question with a specific location or service type (e.g. 'Any outlets in Shah Alam?').")),
+        # Case 2: Clear (Yes)
+        RunnablePassthrough.assign(query=sql_chain).assign(
         schema=lambda _: db.get_table_info(),
-        response=lambda vars: run_query(vars["query"]),
+        response=lambda vars: run_query(vars["query"]),)
             )
             | nl_response_prompt
             | llm.model
             | RunnableLambda (lambda msg: msg.content)
-)
+    )
     
     result = full_chain.invoke({"question": query})
     return result
@@ -55,14 +73,12 @@ def ask_outlet_query(query: str) -> str:
 retriever_tool = Tool.from_function(
     name="ProductRetriever",
     func=ask_product_query,
-    return_direct=True,
     description="Useful for answering product-related questions using the ZUS vector store.",
 )
 
 sql_tool = Tool.from_function(
     name="OutletRetriever",
     func=ask_outlet_query,
-    return_direct=True,
     description="Useful for finding ZUS outlet name, address, services or opening/closing hours from the database.",
 )
 
@@ -72,9 +88,10 @@ tools = [
     retriever_tool
 ]
 
+# Create a custom agent class to execute an action whether to ask follow up question, execute a tool, or retrieve data from vector store or SQL database.
 class get_agent(LLM):
         def __init__(self):
-            sys_msg = """Assistant is a large language model trained by OpenAI.
+            sys_msg = """
             Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
             Assistant will decide which tool to use based on the input it receives. It has access to a variety of tools, including a calculator for performing mathematical calculations, a SQL database for answering questions about ZUS outlets, and a vector store for retrieving information about ZUS drinkware products. If the input is vague or ambiguous, Assistant will clarify the question before proceeding with the task.
 
@@ -86,6 +103,7 @@ class get_agent(LLM):
             You MUST use prior conversation context to resolve follow-up questions. For example:
             - If the user asks “where can I get it?” after asking about a blue tumbler, you should combine this context.
             - If they mention a location like “PJ” or “KL”, you must use the outlet search tool.
+            - First must parses the intent of the user question then decide which action should be taken.
 
             You are expected to reason step-by-step before deciding which tool to call.
             Ask clarifying questions when needed, and prefer to guide the user helpfully.            """
