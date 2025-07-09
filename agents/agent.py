@@ -1,7 +1,6 @@
 import os
 from .chat import LLM
 from agents.tools import calculator
-from dotenv import load_dotenv
 from routers.db import db, run_query, clean_sql_output,nl_response_prompt, sql_prompt
 from agents.llm import ChatGemini
 from langchain_core.tools import Tool
@@ -10,8 +9,6 @@ from langchain.agents import initialize_agent
 from langchain.chains.question_answering import load_qa_chain
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough , RunnableLambda
-
-load_dotenv()
 
 gemini_api_key = os.getenv("GOOGLE_API_KEY")
 

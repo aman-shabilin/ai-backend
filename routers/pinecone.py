@@ -1,6 +1,5 @@
 import os
 import re
-from dotenv import load_dotenv
 from pinecone import Pinecone
 from langchain_pinecone import PineconeVectorStore
 from bs4 import SoupStrainer
@@ -8,8 +7,6 @@ from langchain_core.documents import Document
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_community.document_loaders import WebBaseLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-
-load_dotenv()
 class VectorStore(): 
     def __init__(self, index_name="zusdrinkware", namespace="default"):
         self.pinecone = Pinecone(api_key=os.getenv("PINECONE_API_KEY"))

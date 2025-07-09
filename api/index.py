@@ -3,7 +3,9 @@ from agents.agent import get_agent, ask_outlet_query, ask_product_query
 from routers.pinecone import VectorStore
 from fastapi.middleware.cors import CORSMiddleware
 from infra.models import ChatResponse, ChatRequest
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = FastAPI()
 
