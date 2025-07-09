@@ -1,13 +1,13 @@
 import gradio as gr
 import asyncio
 from agents.agent import get_agent
-from infra.models import ChatRequest
+from infra.models import ChatRequest, ChatResponse
 
 def chat_with_backend(message, history):
     try:
-        request = ChatRequest(prompt=message)
-        result = get_agent().chat(request.prompt)
-        return result
+        result = get_agent().chat(message)  # result is a string
+        chatresponse = ChatResponse(response=result)
+        return chatresponse.response  # ✅ this works
     except Exception as e:
         return f"Error: {e}"
 
