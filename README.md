@@ -1,3 +1,9 @@
+---
+title: ai-backend
+app_file: ./api/frontend.py
+sdk: gradio
+sdk_version: 5.35.0
+---
 # 🧠 AI Chatbot (Backend + Frontend)
 
 A simple Python chatbot interface inspired by Blackbox AI, built using FastAPI and Gradio.
